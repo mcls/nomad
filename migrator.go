@@ -25,7 +25,7 @@ var Migrations = nomad.NewList(nil)
 
 // Context will be available to each migration and should be used to provide
 // access to the database
-type Context struct{
+type Context struct {
 	DB *sql.DB
 }
 
