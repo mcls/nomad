@@ -1,0 +1,4 @@
+.DS_Store
+*.swp
+coverage.out
+dummy_migrations/
