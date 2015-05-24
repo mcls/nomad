@@ -10,3 +10,6 @@ cover:
 # All dependencies
 alldeps:
 	go list -f '{{join .Deps "\n"}}'
+
+vet:
+	go tool vet -v ./
