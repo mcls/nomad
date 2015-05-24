@@ -1,3 +1,4 @@
+// Helps with the integration of nomad with postgres
 package pg
 
 import (

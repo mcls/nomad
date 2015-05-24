@@ -5,9 +5,9 @@ import (
 )
 
 type Migration struct {
-	Version string
-	Up      func(ctx interface{}) error
-	Down    func(ctx interface{}) error
+	Version string                      // Unique version
+	Up      func(ctx interface{}) error // Ran when migrating
+	Down    func(ctx interface{}) error // Ran when rolling back
 }
 
 // List is a list of migrations

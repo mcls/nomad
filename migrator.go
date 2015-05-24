@@ -72,10 +72,8 @@ func init() {
 
 // Migrator generates migration files
 type Migrator struct {
-	// Dir to store the migrations in
-	Dir string
-	// NewVersion is the function use to generate the version string
-	NewVersion   func() string
+	Dir          string        // Where migrations will be stored
+	NewVersion   func() string // Generates the Migration's version
 	NomadPackage string
 }
 
