@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"testing"
 
-	"../../nomad"
 	_ "github.com/lib/pq"
+	"github.com/mcls/nomad"
 )
 
 func setupDatabase(t *testing.T) *sql.DB {
