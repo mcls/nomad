@@ -34,6 +34,10 @@ func setupDatabase(t *testing.T) *sql.DB {
 	return db
 }
 
+func TestImplementsVersionStoreInterface(t *testing.T) {
+	var _ nomad.VersionStore = NewPgVersioner(nil)
+}
+
 func TestPostgresVersionStoreWorks(t *testing.T) {
 	db := setupDatabase(t)
 	versioner := NewPgVersioner(db)
