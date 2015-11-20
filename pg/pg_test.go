@@ -35,12 +35,12 @@ func setupDatabase(t *testing.T) *sql.DB {
 }
 
 func TestImplementsVersionStoreInterface(t *testing.T) {
-	var _ nomad.VersionStore = NewPgVersioner(nil)
+	var _ nomad.VersionStore = NewVersionStore(nil)
 }
 
 func TestPostgresVersionStoreWorks(t *testing.T) {
 	db := setupDatabase(t)
-	versioner := NewPgVersioner(db)
+	versioner := NewVersionStore(db)
 
 	err := versioner.SetupVersions()
 	if err != nil {
@@ -60,7 +60,7 @@ func TestPostgresVersionStoreWorks(t *testing.T) {
 
 func TestRunningMigrations(t *testing.T) {
 	db := setupDatabase(t)
-	versioner := NewPgVersioner(db)
+	versioner := NewVersionStore(db)
 
 	err := versioner.SetupVersions()
 	if err != nil {

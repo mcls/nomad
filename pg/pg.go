@@ -7,15 +7,15 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type PgVersioner struct {
+type VersionStore struct {
 	DB *sql.DB
 }
 
-func NewPgVersioner(db *sql.DB) *PgVersioner {
-	return &PgVersioner{DB: db}
+func NewVersionStore(db *sql.DB) *VersionStore {
+	return &VersionStore{DB: db}
 }
 
-func (vs *PgVersioner) HasVersion(v string) bool {
+func (vs *VersionStore) HasVersion(v string) bool {
 	var found string
 	err := vs.DB.QueryRow("SELECT * FROM schema_migrations WHERE version = $1", v).Scan(&found)
 	switch {
@@ -28,7 +28,7 @@ func (vs *PgVersioner) HasVersion(v string) bool {
 	}
 }
 
-func (vs *PgVersioner) AddVersion(v string) {
+func (vs *VersionStore) AddVersion(v string) {
 	_, err := vs.DB.Exec("INSERT INTO schema_migrations (version) VALUES ($1)", v)
 	if err != nil {
 		panic(err)
@@ -36,7 +36,7 @@ func (vs *PgVersioner) AddVersion(v string) {
 }
 
 // SetupVersions creates the schema_migrations table to store the versions
-func (vs *PgVersioner) SetupVersions() error {
+func (vs *VersionStore) SetupVersions() error {
 	_, err := vs.DB.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
   version text NOT NULL UNIQUE
 )`)
