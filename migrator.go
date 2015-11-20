@@ -107,7 +107,9 @@ func (m *Migrator) Create(name string) error {
 }
 
 func (m *Migrator) createSetupFile() error {
-	full := path.Join(m.Dir, "migrations.go")
+	// Use 000_ prefix so it's init function gets called first and can do setup
+	// on which the other migrations can rely
+	full := path.Join(m.Dir, "000_setup_migrations.go")
 	f, err := os.Create(full)
 	if err != nil {
 		return err
