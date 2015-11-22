@@ -4,7 +4,7 @@ package nomad
 type VersionStore interface {
 	AddVersion(v string)
 	HasVersion(v string) bool
-	SetupVersions() error
+	SetupVersionStore() error
 }
 
 // MemVersionStore is a in-memory implementation of VersionStore,
@@ -27,8 +27,8 @@ func (mv *MemVersionStore) HasVersion(v string) bool {
 	return mv.versions[v]
 }
 
-// SetupVersions must be ran before checking versions
-func (mv *MemVersionStore) SetupVersions() error {
+// SetupVersionStore must be ran before checking versions
+func (mv *MemVersionStore) SetupVersionStore() error {
 	if mv.versions == nil {
 		mv.versions = map[string]bool{}
 	}

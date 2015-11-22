@@ -35,8 +35,8 @@ func (vs *VersionStore) AddVersion(v string) {
 	}
 }
 
-// SetupVersions creates the schema_migrations table to store the versions
-func (vs *VersionStore) SetupVersions() error {
+// SetupVersionStore creates the schema_migrations table to store the versions
+func (vs *VersionStore) SetupVersionStore() error {
 	_, err := vs.DB.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
   version text NOT NULL UNIQUE
 )`)

@@ -47,8 +47,7 @@ func (m *List) Sort() {
 }
 
 func (m *List) Run(context interface{}) error {
-	err := m.SetupVersions()
-	if err != nil {
+	if err := m.SetupVersionStore(); err != nil {
 		return err
 	}
 	m.Sort()

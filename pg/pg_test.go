@@ -42,7 +42,7 @@ func TestPostgresVersionStoreWorks(t *testing.T) {
 	db := setupDatabase(t)
 	versioner := NewVersionStore(db)
 
-	err := versioner.SetupVersions()
+	err := versioner.SetupVersionStore()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestRunningMigrations(t *testing.T) {
 	db := setupDatabase(t)
 	versioner := NewVersionStore(db)
 
-	err := versioner.SetupVersions()
+	err := versioner.SetupVersionStore()
 	if err != nil {
 		log.Fatal(err)
 	}
