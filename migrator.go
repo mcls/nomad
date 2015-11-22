@@ -40,6 +40,11 @@ func init() {
 	}
 	context.DB = db
 }
+
+// Run pending migrations
+func Run() {
+	Migrations.Run(context)
+}
 `
 
 var tplMigration string = `package migrations
