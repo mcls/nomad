@@ -1,5 +1,7 @@
 .PHONY: test
 
+default: test build
+
 build:
 	@go build ./cmd/...
 	@go build ./...

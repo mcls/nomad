@@ -50,7 +50,7 @@ func Run() {
 	if err := Migrations.Run(context); err == nil {
 		fmt.Println("Done!")
 	} else {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 }
 `
