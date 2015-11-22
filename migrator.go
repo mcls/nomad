@@ -17,11 +17,12 @@ import (
 	"os"
 
 	"{{.NomadPackage}}"
+	"{{.NomadPackage}}/pg"
 	// Setup postgres driver
 	_ "github.com/lib/pq"
 )
 
-var Migrations = nomad.NewList(nil)
+var Migrations *nomad.List
 
 // Context will be available to each migration and should be used to provide
 // access to the database
@@ -39,6 +40,7 @@ func init() {
 		log.Fatal(err)
 	}
 	context.DB = db
+	Migrations = nomad.NewList(pg.NewVersionStore(db))
 }
 
 // Run pending migrations
