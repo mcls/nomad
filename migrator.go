@@ -13,6 +13,7 @@ var tplSetup string = `package migrations
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -45,7 +46,12 @@ func init() {
 
 // Run pending migrations
 func Run() {
-	Migrations.Run(context)
+	fmt.Printf("Checking %d migrations...", Migrations.Len())
+	if err := Migrations.Run(context); err == nil {
+		fmt.Println("Done!")
+	} else {
+		fmt.Println(err)
+	}
 }
 `
 
