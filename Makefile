@@ -16,3 +16,6 @@ alldeps:
 
 vet:
 	go tool vet -v ./
+
+install:
+	go install github.com/mcls/nomad
