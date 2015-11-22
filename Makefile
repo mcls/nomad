@@ -10,7 +10,7 @@ test: setup_test
 	go test -v ./...
 
 setup_test:
-	rm -r dummy_migrations/
+	-rm -r dummy_migrations/
 
 autotest:
 	fswatch -o --exclude dummy_migrations ./ | xargs -n1 -I{} make test

@@ -68,7 +68,7 @@ func TestRunningMigrations(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	l := nomad.NewList(versioner)
+	l := nomad.NewList(versioner, db)
 	l.Add(&nomad.Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -82,7 +82,7 @@ func TestRunningMigrations(t *testing.T) {
 			return err
 		},
 	})
-	l.Run(db)
+	l.Run()
 
 	if !versioner.HasVersion("A") {
 		t.Fatal("Should have version A")
@@ -108,7 +108,7 @@ func TestRollingBackMigration(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	l := nomad.NewList(versioner)
+	l := nomad.NewList(versioner, db)
 	l.Add(&nomad.Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -146,7 +146,7 @@ func TestRollingBackMigration(t *testing.T) {
 			return nil
 		},
 	})
-	if err := l.Run(db); err != nil {
+	if err := l.Run(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -155,7 +155,7 @@ func TestRollingBackMigration(t *testing.T) {
 	}
 
 	// Rollback the last migration
-	if err := l.Rollback(db); err != nil {
+	if err := l.Rollback(); err != nil {
 		log.Fatal(err)
 	}
 

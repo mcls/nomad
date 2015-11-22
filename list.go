@@ -10,10 +10,12 @@ import (
 type List struct {
 	VersionStore
 	migrations []*Migration
+	Context    interface{}
 }
 
-func NewList(versionStore VersionStore) *List {
+func NewList(versionStore VersionStore, context interface{}) *List {
 	return &List{
+		Context:      context,
 		migrations:   []*Migration{},
 		VersionStore: versionStore,
 	}
@@ -48,7 +50,7 @@ func (m *List) Sort() {
 	sort.Sort(m)
 }
 
-func (m *List) Run(context interface{}) error {
+func (m *List) Run() error {
 	if err := m.setup(); err != nil {
 		return err
 	}
@@ -60,7 +62,7 @@ func (m *List) Run(context interface{}) error {
 		if x.Up == nil {
 			return fmt.Errorf("No Up() function for migration %q", x.Version)
 		}
-		if err := x.Up(context); err == nil {
+		if err := x.Up(m.Context); err == nil {
 			m.AddVersion(x.Version)
 		} else {
 			return err
@@ -81,7 +83,7 @@ func (m *List) setup() error {
 }
 
 // Rollback reverts the last migration
-func (m *List) Rollback(context interface{}) error {
+func (m *List) Rollback() error {
 	if err := m.setup(); err != nil {
 		return err
 	}
@@ -94,7 +96,7 @@ func (m *List) Rollback(context interface{}) error {
 		if x.Down == nil {
 			return fmt.Errorf("No Down() function for migration %q", x.Version)
 		}
-		if err := x.Down(context); err == nil {
+		if err := x.Down(m.Context); err == nil {
 			m.RemoveVersion(x.Version)
 			return nil // Stop after one rollback
 		} else {

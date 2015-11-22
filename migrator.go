@@ -13,7 +13,6 @@ var tplSetup string = `package migrations
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 
@@ -41,26 +40,7 @@ func init() {
 		log.Fatal(err)
 	}
 	context.DB = db
-	Migrations = nomad.NewList(pg.NewVersionStore(db))
-}
-
-// Run pending migrations
-func Run() {
-	fmt.Printf("Checking %d migrations...", Migrations.Len())
-	if err := Migrations.Run(context); err == nil {
-		fmt.Println("Done!")
-	} else {
-		log.Fatal(err)
-	}
-}
-
-// Rollback the latest migration
-func Rollback() {
-	if err := Migrations.Rollback(context); err != nil {
-		log.Fatal(err)
-	} else {
-		fmt.Println("Done.")
-	}
+	Migrations = nomad.NewList(pg.NewVersionStore(db), context)
 }
 `
 
