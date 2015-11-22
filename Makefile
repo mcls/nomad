@@ -1,5 +1,8 @@
 .PHONY: test
 
+build:
+	go build ./cmd/... ./...
+
 test:
 	go test -v ./...
 
