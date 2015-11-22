@@ -3,6 +3,7 @@ package nomad
 // VersionStore checks whether versions are up to date
 type VersionStore interface {
 	AddVersion(v string)
+	RemoveVersion(v string)
 	HasVersion(v string) bool
 	SetupVersionStore() error
 }
@@ -20,6 +21,10 @@ func NewMemVersionStore() *MemVersionStore {
 // AddVersion adds the version
 func (mv *MemVersionStore) AddVersion(v string) {
 	mv.versions[v] = true
+}
+
+func (mv *MemVersionStore) RemoveVersion(v string) {
+	mv.versions[v] = false
 }
 
 // HasVersion checks if the version already exists

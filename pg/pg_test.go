@@ -27,6 +27,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 	_, err = db.Exec(`
 	DROP TABLE IF EXISTS schema_migrations;
 	DROP TABLE IF EXISTS users;
+	DROP TABLE IF EXISTS blogs;
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -95,5 +96,74 @@ func TestRunningMigrations(t *testing.T) {
 
 	if username != "mcls" {
 		t.Fatalf("Expected username 'mcls' was '%s'", username)
+	}
+}
+
+func TestRollingBackMigration(t *testing.T) {
+	db := setupDatabase(t)
+	versioner := NewVersionStore(db)
+
+	err := versioner.SetupVersionStore()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	l := nomad.NewList(versioner)
+	l.Add(&nomad.Migration{
+		Version: "A",
+		Up: func(ctx interface{}) error {
+			db := ctx.(*sql.DB)
+			_, err := db.Exec("CREATE TABLE users (id serial PRIMARY KEY, username text);")
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			_, err = db.Exec("INSERT INTO users (username) VALUES ('mcls')")
+			return err
+		},
+		Down: func(ctx interface{}) error {
+			return nil
+		},
+	})
+	l.Add(&nomad.Migration{
+		Version: "B",
+		Up: func(ctx interface{}) error {
+			db := ctx.(*sql.DB)
+			_, err := db.Exec("CREATE TABLE blogs (id serial PRIMARY KEY, content text);")
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			return nil
+		},
+		Down: func(ctx interface{}) error {
+			db := ctx.(*sql.DB)
+			_, err := db.Exec("DROP TABLE blogs")
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			return nil
+		},
+	})
+	if err := l.Run(db); err != nil {
+		log.Fatal(err)
+	}
+
+	if !versioner.HasVersion("B") {
+		t.Fatal("Should have version B")
+	}
+
+	// Rollback the last migration
+	if err := l.Rollback(db); err != nil {
+		log.Fatal(err)
+	}
+
+	if !versioner.HasVersion("A") {
+		t.Fatal("Should have version A")
+	}
+
+	if versioner.HasVersion("B") {
+		t.Fatal("Should NOT have version B")
 	}
 }

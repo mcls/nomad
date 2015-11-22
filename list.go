@@ -1,6 +1,8 @@
 package nomad
 
 import (
+	"fmt"
+	"log"
 	"sort"
 )
 
@@ -47,16 +49,54 @@ func (m *List) Sort() {
 }
 
 func (m *List) Run(context interface{}) error {
-	if err := m.SetupVersionStore(); err != nil {
+	if err := m.setup(); err != nil {
 		return err
 	}
-	m.Sort()
 	for _, x := range m.migrations {
 		if m.HasVersion(x.Version) {
 			continue
 		}
+		log.Printf("Running migration %q\n", x.Version)
+		if x.Up == nil {
+			return fmt.Errorf("No Up() function for migration %q", x.Version)
+		}
 		if err := x.Up(context); err == nil {
 			m.AddVersion(x.Version)
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
+// setup setup the version store and sorts the migrations according to their
+// version
+func (m *List) setup() error {
+	if err := m.SetupVersionStore(); err == nil {
+		m.Sort()
+		return nil
+	} else {
+		return err
+	}
+}
+
+// Rollback reverts the last migration
+func (m *List) Rollback(context interface{}) error {
+	if err := m.setup(); err != nil {
+		return err
+	}
+	sort.Sort(sort.Reverse(m))
+	for _, x := range m.migrations {
+		if !m.HasVersion(x.Version) {
+			continue
+		}
+		log.Printf("Rolling back migration %q\n", x.Version)
+		if x.Down == nil {
+			return fmt.Errorf("No Down() function for migration %q", x.Version)
+		}
+		if err := x.Down(context); err == nil {
+			m.RemoveVersion(x.Version)
+			return nil // Stop after one rollback
 		} else {
 			return err
 		}

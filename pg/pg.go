@@ -35,6 +35,13 @@ func (vs *VersionStore) AddVersion(v string) {
 	}
 }
 
+func (vs *VersionStore) RemoveVersion(v string) {
+	_, err := vs.DB.Exec("DELETE FROM schema_migrations WHERE version = $1", v)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // SetupVersionStore creates the schema_migrations table to store the versions
 func (vs *VersionStore) SetupVersionStore() error {
 	_, err := vs.DB.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
