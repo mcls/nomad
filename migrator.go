@@ -53,6 +53,15 @@ func Run() {
 		log.Fatal(err)
 	}
 }
+
+// Rollback the latest migration
+func Rollback() {
+	if err := Migrations.Rollback(context); err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Println("Done.")
+	}
+}
 `
 
 var tplMigration string = `package migrations
