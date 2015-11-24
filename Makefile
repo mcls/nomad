@@ -1,30 +1,33 @@
 .PHONY: test
 
+GO=$(shell command -v go)
+FSWATCH=$(shell command -v fswatch)
+
 default: test build
 
 build:
-	@go build ./cmd/...
-	@go build ./...
+	@$(GO) build ./cmd/...
+	@$(GO) build ./...
 
 test: setup_test
-	go test ./...
+	$(GO) test ./...
 
 setup_test:
 	-rm -r dummy_migrations/
 
 autotest:
-	fswatch -o --exclude dummy_migrations ./ | xargs -n1 -I{} make test
+	$(FSWATCH) -o --exclude dummy_migrations ./ | xargs -n1 -I{} $(MAKE) test
 
 # go get golang.org/x/tools/cmd/cover
 cover:
-	go test -covermode=count -coverprofile=`pwd`/coverage.out && go tool cover -html=`pwd`/coverage.out
+	$(GO) test -covermode=count -coverprofile=`pwd`/coverage.out && $(GO) tool cover -html=`pwd`/coverage.out
 
 # All dependencies
 alldeps:
-	go list -f '{{join .Deps "\n"}}'
+	$(GO) list -f '{{join .Deps "\n"}}'
 
 vet:
-	go tool vet -v ./
+	$(GO) tool vet -v ./
 
 install:
-	go install ./cmd/... ./...
+	$(GO) install ./cmd/... ./...
