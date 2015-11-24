@@ -121,3 +121,65 @@ func TestDoesntRunMigrationTwice(t *testing.T) {
 		}
 	}
 }
+
+func TestRollback(t *testing.T) {
+	x := 0
+
+	l := NewList(NewMemVersionStore(), nil)
+	l.AddVersion("A")
+	l.AddVersion("B")
+
+	l.Add(&Migration{
+		Version: "A",
+		Down: func(ctx interface{}) error {
+			x = 50
+			return nil
+		},
+	})
+	l.Add(&Migration{
+		Version: "B",
+		Down: func(ctx interface{}) error {
+			x = 100
+			return nil
+		},
+	})
+
+	if err := l.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+
+	if x != 100 {
+		t.Fatalf("Didn't rollback properly. x = %d\n", x)
+	}
+
+	// Check that only the last migration was rolled back
+	if !l.HasVersion("A") {
+		t.Fatal("Should not have rolled back 'A'")
+	}
+
+	if l.HasVersion("B") {
+		t.Fatal("Still has version 'B'")
+	}
+}
+
+func TestRollbackWithErrors(t *testing.T) {
+	l := NewList(NewMemVersionStore(), nil)
+	l.AddVersion("A")
+
+	l.Add(&Migration{
+		Version: "A",
+		Down: func(ctx interface{}) error {
+			return errors.New("No way back!")
+		},
+	})
+
+	if err := l.Rollback(); err == nil {
+		t.Fatal("Expected error")
+	} else if err.Error() != "No way back!" {
+		t.Fatalf("Expected different error than %q", err)
+	}
+
+	if !l.HasVersion("A") {
+		t.Fatal("Shouldn't have removed 'A' after error")
+	}
+}
