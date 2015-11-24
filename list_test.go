@@ -79,12 +79,12 @@ func TestRunWithErrors(t *testing.T) {
 	})
 	err := l.Run()
 
-	if x != 0 {
-		t.Fatal("Didn't run migrations properly")
+	if err == nil || err.Error() != "Oh no" {
+		t.Fatalf("Wrong error returned: '%s'", err)
 	}
 
-	if err.Error() != "Oh no" {
-		t.Fatalf("Wrong error returned: '%s'", err)
+	if x != 0 {
+		t.Fatal("Something went wrong while running the migrations")
 	}
 }
 

@@ -59,13 +59,7 @@ func (m *List) Run() error {
 			continue
 		}
 		log.Printf("Running migration %q\n", x.Version)
-		if x.Up == nil {
-			return fmt.Errorf("No Up() function for migration %q", x.Version)
-		}
-		if err := x.Up(m.Context); err != nil {
-			return err
-		}
-		if err := m.AddVersion(x.Version); err != nil {
+		if err := m.migrateUp(x); err != nil {
 			return err
 		}
 	}
@@ -94,14 +88,28 @@ func (m *List) Rollback() error {
 			continue
 		}
 		log.Printf("Rolling back migration %q\n", x.Version)
-		if x.Down == nil {
-			return fmt.Errorf("No Down() function for migration %q", x.Version)
-		}
-		if err := x.Down(m.Context); err != nil {
-			return err
-		}
 		// Stop after one rollback
-		return m.RemoveVersion(x.Version)
+		return m.migrateDown(x)
 	}
 	return nil
+}
+
+func (m *List) migrateUp(migration *Migration) error {
+	if migration.Up == nil {
+		return fmt.Errorf("No Up() function for migration %q", migration.Version)
+	}
+	if err := migration.Up(m.Context); err != nil {
+		return err
+	}
+	return m.AddVersion(migration.Version)
+}
+
+func (m *List) migrateDown(migration *Migration) error {
+	if migration.Down == nil {
+		return fmt.Errorf("No Down() function for migration %q", migration.Version)
+	}
+	if err := migration.Down(m.Context); err != nil {
+		return err
+	}
+	return m.RemoveVersion(migration.Version)
 }
