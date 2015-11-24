@@ -62,11 +62,10 @@ func (m *List) Run() error {
 		if x.Up == nil {
 			return fmt.Errorf("No Up() function for migration %q", x.Version)
 		}
-		if err := x.Up(m.Context); err == nil {
-			if err := m.AddVersion(x.Version); err != nil {
-				return err
-			}
-		} else {
+		if err := x.Up(m.Context); err != nil {
+			return err
+		}
+		if err := m.AddVersion(x.Version); err != nil {
 			return err
 		}
 	}
@@ -98,12 +97,11 @@ func (m *List) Rollback() error {
 		if x.Down == nil {
 			return fmt.Errorf("No Down() function for migration %q", x.Version)
 		}
-		if err := x.Down(m.Context); err == nil {
-			// Stop after one rollback
-			return m.RemoveVersion(x.Version)
-		} else {
+		if err := x.Down(m.Context); err != nil {
 			return err
 		}
+		// Stop after one rollback
+		return m.RemoveVersion(x.Version)
 	}
 	return nil
 }
