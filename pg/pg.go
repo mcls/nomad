@@ -28,18 +28,14 @@ func (vs *VersionStore) HasVersion(v string) bool {
 	}
 }
 
-func (vs *VersionStore) AddVersion(v string) {
+func (vs *VersionStore) AddVersion(v string) error {
 	_, err := vs.DB.Exec("INSERT INTO schema_migrations (version) VALUES ($1)", v)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
-func (vs *VersionStore) RemoveVersion(v string) {
+func (vs *VersionStore) RemoveVersion(v string) error {
 	_, err := vs.DB.Exec("DELETE FROM schema_migrations WHERE version = $1", v)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 // SetupVersionStore creates the schema_migrations table to store the versions

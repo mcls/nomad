@@ -45,10 +45,12 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	l.Run()
+	if err := l.Run(); err != nil {
+		t.Fatal(err)
+	}
 
 	if x != 3 {
-		t.Fatal("Didn't run migrations properly")
+		t.Fatalf("Didn't run migrations properly. x = %d\n", x)
 	}
 
 	// Check that all versions have been added
