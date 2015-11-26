@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Nomad by mcls</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Nomad</h1>
+        <p>Flexible migration library for Go</p>
+
+        <p class="view"><a href="https://github.com/mcls/nomad">View the Project on GitHub <small>mcls/nomad</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mcls/nomad/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mcls/nomad/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mcls/nomad">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a id="nomad" class="anchor" href="#nomad" aria-hidden="true"><span class="octicon octicon-link"></span></a>Nomad</h1>
+
+<p><a href="https://travis-ci.org/mcls/nomad"><img src="https://travis-ci.org/mcls/nomad.svg" alt="Build
+Status"></a>
+| <a href="https://godoc.org/github.com/mcls/nomad">GoDoc</a></p>
+
+<p><strong><em>UNDER DEVELOPMENT</em></strong></p>
+
+<p>Nomad is a migration library for Go. Its goal is to be minimal and flexible.<br>
+You can use it with an ORM, or use plain SQL.</p>
+
+<h2>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h2>
+
+<p>Here's an example of a migration definition.</p>
+
+<div class="highlight highlight-source-go"><pre>&amp;nomad.<span class="pl-smi">Migration</span>{
+    <span class="pl-v">Version</span>: <span class="pl-s"><span class="pl-pds">"</span>2015-11-22_18:07:05<span class="pl-pds">"</span></span>,
+    <span class="pl-v">Up</span>: <span class="pl-c1">func</span>(ctx <span class="pl-k">interface</span>{}) <span class="pl-k">error</span> {
+        <span class="pl-smi">c</span> <span class="pl-k">:=</span> ctx.(*Context)
+        <span class="pl-smi">_</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> c.<span class="pl-smi">DB</span>.<span class="pl-c1">Exec</span>(<span class="pl-s"><span class="pl-pds">`</span></span>
+<span class="pl-s">        CREATE TABLE posts (</span>
+<span class="pl-s">            id serial PRIMARY KEY,</span>
+<span class="pl-s">            title text NOT NULL CHECK(length(title) &lt; 200),</span>
+<span class="pl-s">            content text NOT NULL,</span>
+<span class="pl-s">            created_at timestamp with time zone DEFAULT(current_timestamp)</span>
+<span class="pl-s">        )<span class="pl-pds">`</span></span>)
+        <span class="pl-k">return</span> err
+    },
+    <span class="pl-v">Down</span>: <span class="pl-c1">func</span>(ctx <span class="pl-k">interface</span>{}) <span class="pl-k">error</span> {
+        <span class="pl-smi">c</span> <span class="pl-k">:=</span> ctx.(*Context)
+        <span class="pl-smi">_</span>, <span class="pl-smi">err</span> <span class="pl-k">:=</span> c.<span class="pl-smi">DB</span>.<span class="pl-c1">Exec</span>(<span class="pl-s"><span class="pl-pds">"</span>DROP TABLE posts<span class="pl-pds">"</span></span>)
+        <span class="pl-k">return</span> err
+    },
+}</pre></div>
+
+<p>For a more complete example, take a look at
+<a href="https://github.com/mcls/nomad/blob/master/example_test.go">example_test.go</a>.</p>
+
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install</h2>
+
+<p>To install the package and the command-line tool:</p>
+
+<div class="highlight highlight-source-shell"><pre>git clone https://github.com/mcls/nomad.git
+make install</pre></div>
+
+<h2>
+<a id="code-generation" class="anchor" href="#code-generation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Code generation</h2>
+
+<p>The initial migration can be created via:</p>
+
+<div class="highlight highlight-source-shell"><pre><span class="pl-c"># to create a migration</span>
+nomad new create_users</pre></div>
+
+<p>After that you can import <a href="https://github.com/spf13/cobra">cobra</a> commands in
+your own app:</p>
+
+<div class="highlight highlight-source-go"><pre><span class="pl-smi">migrationCmd</span> <span class="pl-k">:=</span> nomad.<span class="pl-c1">NewMigrationCmd</span>(
+  migrations, <span class="pl-c">// migration.List object, basically your migrations</span>
+  <span class="pl-s"><span class="pl-pds">"</span>./migrations<span class="pl-pds">"</span></span>, <span class="pl-c">// the migrations directory</span>
+)</pre></div>
+
+<p>This creates a <code>migration</code> command with these subcommands:</p>
+
+<ul>
+<li>
+<code>run</code>: runs all pending migrations</li>
+<li>
+<code>rollback</code>: rolls back the latest migration</li>
+<li>
+<code>new</code>: creates a new migration</li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mcls">mcls</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
