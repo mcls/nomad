@@ -13,11 +13,15 @@ type Context struct {
 	Data []string
 }
 
+// Below is an example with an in-memory VersionStore. The VersionStore
+// determines which migrations are pending.
+// The context object can be of any type and provides the migration functions
+// with access to the database or other resources.
 func Example() {
 	context := Context{[]string{}}
 
 	migrations := nomad.NewList(
-		// used to store the versions, for a DB example look at pg.VersionStore
+		// For an example of a DB-backed VersionStore look at pg.VersionStore.
 		nomad.NewMemVersionStore(),
 		// context will be available to each migration
 		&context,
