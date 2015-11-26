@@ -1,0 +1,8 @@
+language: go
+go:
+  - 1.5.1
+  - tip
+script:
+  - go get -u ./...
+  - go test -v ./...
+  - go build
