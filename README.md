@@ -1,6 +1,7 @@
 # Nomad
 
-A migration library for Go
+Nomad is a migration library for Go. Its goal is to be minimal and flexible. You
+can use it with your own ORM, or use plain SQL.
 
 ## Install
 
