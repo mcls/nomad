@@ -1,5 +1,9 @@
 # Nomad
 
+[![Build
+Status](https://travis-ci.org/mcls/nomad.svg)](https://travis-ci.org/mcls/nomad)
+| [GoDoc](https://godoc.org/github.com/mcls/nomad)
+
 ***UNDER DEVELOPMENT***
 
 Nomad is a migration library for Go. Its goal is to be minimal and flexible.  
