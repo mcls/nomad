@@ -9,9 +9,9 @@ import (
 // List is a list of migrations
 type List struct {
 	VersionStore
-	migrations []*Migration
 	Context    interface{}
-	Hooks      *Hooks
+	hooks      *Hooks
+	migrations []*Migration
 }
 
 type Hooks struct {
@@ -26,9 +26,9 @@ func NewList(versionStore VersionStore, context interface{}, hooks *Hooks) *List
 	}
 	return &List{
 		Context:      context,
-		migrations:   []*Migration{},
 		VersionStore: versionStore,
-		Hooks:        hooks,
+		hooks:        hooks,
+		migrations:   []*Migration{},
 	}
 }
 
@@ -111,23 +111,23 @@ func (m *List) runWithHooks(migration *Migration, fn func(*Migration) error) err
 		return fmt.Errorf("No function for migration")
 	}
 
-	if m.Hooks.Before != nil {
-		if err := m.Hooks.Before(m.Context); err != nil {
+	if m.hooks.Before != nil {
+		if err := m.hooks.Before(m.Context); err != nil {
 			return err
 		}
 	}
 
 	if err := fn(migration); err != nil {
-		if m.Hooks.OnError != nil {
-			if err2 := m.Hooks.OnError(m.Context, err); err2 != nil {
+		if m.hooks.OnError != nil {
+			if err2 := m.hooks.OnError(m.Context, err); err2 != nil {
 				return err2
 			}
 		}
 		return err
 	}
 
-	if m.Hooks.After != nil {
-		if err := m.Hooks.After(m.Context); err != nil {
+	if m.hooks.After != nil {
+		if err := m.hooks.After(m.Context); err != nil {
 			return err
 		}
 	}
