@@ -21,6 +21,7 @@ import (
     "github.com/mcls/nomad"
     nomadpg "github.com/mcls/nomad/pg"
 )
+
 db, err := sql.Open("postgres", "dbname=nomad_db_test sslmode=disable")
 if err != nil {
     log.Fatal(err)
@@ -28,6 +29,7 @@ if err != nil {
 
 migrations := nomadpg.NewList(db)
 
+// Create a migration
 migrations.Add(&nomad.Migration{
     Version: "2015-11-22_18:07:05",
     Up: func(ctx interface{}) error {
