@@ -25,6 +25,7 @@ func Example() {
 		nomad.NewMemVersionStore(),
 		// context will be available to each migration
 		&context,
+		nil,
 	)
 
 	m1 := &nomad.Migration{

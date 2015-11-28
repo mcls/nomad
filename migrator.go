@@ -40,7 +40,7 @@ func init() {
 		log.Fatal(err)
 	}
 	context.DB = db
-	Migrations = nomad.NewList(pg.NewVersionStore(db), context)
+	Migrations = nomad.NewList(pg.NewVersionStore(db), context, nil)
 }
 `
 
