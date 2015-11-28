@@ -6,7 +6,7 @@ import (
 )
 
 func TestSort(t *testing.T) {
-	l := NewList(NewMemVersionStore(), nil)
+	l := NewList(NewMemVersionStore(), nil, nil)
 	l.Add(&Migration{Version: "B"})
 	l.Add(&Migration{Version: "A"})
 	l.Add(&Migration{Version: "C"})
@@ -23,7 +23,7 @@ func TestSort(t *testing.T) {
 func TestRun(t *testing.T) {
 	x := 0
 
-	l := NewList(NewMemVersionStore(), nil)
+	l := NewList(NewMemVersionStore(), nil, nil)
 	for _, v := range []string{"A", "B"} {
 		if l.HasVersion(v) {
 			t.Fatalf("Can't have version '%s'", v)
@@ -63,7 +63,7 @@ func TestRun(t *testing.T) {
 
 func TestRunWithErrors(t *testing.T) {
 	x := 0
-	l := NewList(NewMemVersionStore(), nil)
+	l := NewList(NewMemVersionStore(), nil, nil)
 	l.Add(&Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -91,7 +91,7 @@ func TestRunWithErrors(t *testing.T) {
 func TestDoesntRunMigrationTwice(t *testing.T) {
 	x := 0
 
-	l := NewList(NewMemVersionStore(), nil)
+	l := NewList(NewMemVersionStore(), nil, nil)
 	l.AddVersion("A")
 	l.Add(&Migration{
 		Version: "A",
@@ -125,7 +125,7 @@ func TestDoesntRunMigrationTwice(t *testing.T) {
 func TestRollback(t *testing.T) {
 	x := 0
 
-	l := NewList(NewMemVersionStore(), nil)
+	l := NewList(NewMemVersionStore(), nil, nil)
 	l.AddVersion("A")
 	l.AddVersion("B")
 
@@ -163,7 +163,7 @@ func TestRollback(t *testing.T) {
 }
 
 func TestRollbackWithErrors(t *testing.T) {
-	l := NewList(NewMemVersionStore(), nil)
+	l := NewList(NewMemVersionStore(), nil, nil)
 	l.AddVersion("A")
 
 	l.Add(&Migration{

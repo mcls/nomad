@@ -2,7 +2,9 @@ language: go
 go:
   - 1.5.1
   - tip
+install:
+  - go get github.com/lib/pq
+  - go get github.com/spf13/cobra
 script:
-  - go get -u ./...
   - go test -v ./...
   - go build

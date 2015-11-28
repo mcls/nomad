@@ -24,23 +24,12 @@ import (
 
 var Migrations *nomad.List
 
-// Context will be available to each migration and should be used to provide
-// access to the database
-type Context struct {
-	DB *sql.DB
-}
-
-// This struct will be used as an argument to each migrations Up/Down func.
-// You can use this to get access to your database.
-var context = &Context{}
-
 func init() {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	context.DB = db
-	Migrations = nomad.NewList(pg.NewVersionStore(db), context)
+	Migrations = pg.NewList(db)
 }
 `
 
@@ -50,19 +39,21 @@ import (
 	"fmt"
 
 	"{{.NomadPackage}}"
+	"{{.NomadPackage}}/pg"
 )
 
 func init() {
 	migration := &nomad.Migration{
 		Version: "{{.Version}}",
 		Up: func(ctx interface{}) error {
-			c := ctx.(*Context)
+			c := ctx.(*pg.Context)
 			fmt.Println("Up")
 			fmt.Println(c)
-			return nil
+			_, err := c.Tx.Exec("CREATE TABLE ...")
+			return err
 		},
 		Down: func(ctx interface{}) error {
-			c := ctx.(*Context)
+			c := ctx.(*pg.Context)
 			fmt.Println("Down")
 			fmt.Println(c)
 			return nil

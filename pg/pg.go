@@ -5,7 +5,63 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
+	"github.com/mcls/nomad"
 )
+
+// NewList creates a nomad.List for postgres migrations
+func NewList(db *sql.DB) *nomad.List {
+	return nomad.NewList(
+		NewVersionStore(db),
+		NewContext(db),
+		NewHooks(),
+	)
+}
+
+type Context struct {
+	DB *sql.DB
+	Tx *sql.Tx
+}
+
+func NewContext(db *sql.DB) *Context {
+	return &Context{
+		DB: db,
+		Tx: nil,
+	}
+}
+
+func beforeHook(ctx interface{}) error {
+	c := ctx.(*Context)
+	if tx, err := c.DB.Begin(); err == nil {
+		c.Tx = tx
+		return nil
+	} else {
+		return err
+	}
+}
+func afterHook(ctx interface{}) error {
+	c := ctx.(*Context)
+	if err := c.Tx.Commit(); err != nil {
+		c.Tx = nil
+		return err
+	}
+	return nil
+}
+
+func onError(ctx interface{}, origErr error) error {
+	c := ctx.(*Context)
+	if err := c.Tx.Rollback(); err != nil {
+		return err
+	}
+	return origErr
+}
+
+func NewHooks() *nomad.Hooks {
+	return &nomad.Hooks{
+		Before:  beforeHook,
+		After:   afterHook,
+		OnError: onError,
+	}
+}
 
 type VersionStore struct {
 	DB *sql.DB

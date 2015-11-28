@@ -11,13 +11,24 @@ type List struct {
 	VersionStore
 	migrations []*Migration
 	Context    interface{}
+	Hooks      *Hooks
 }
 
-func NewList(versionStore VersionStore, context interface{}) *List {
+type Hooks struct {
+	Before  func(interface{}) error        // Before is called before running or rolling back a migration
+	After   func(interface{}) error        // After is called after running or rolling back a migration
+	OnError func(interface{}, error) error // OnError is called if anything goes wrong during a migration
+}
+
+func NewList(versionStore VersionStore, context interface{}, hooks *Hooks) *List {
+	if hooks == nil {
+		hooks = &Hooks{}
+	}
 	return &List{
 		Context:      context,
 		migrations:   []*Migration{},
 		VersionStore: versionStore,
+		Hooks:        hooks,
 	}
 }
 
@@ -59,9 +70,10 @@ func (m *List) Run() error {
 			continue
 		}
 		log.Printf("Running migration %q\n", x.Version)
-		if err := m.migrateUp(x); err != nil {
+		if err := m.runWithHooks(x, m.migrateUp); err != nil {
 			return err
 		}
+
 	}
 	return nil
 }
@@ -89,8 +101,37 @@ func (m *List) Rollback() error {
 		}
 		log.Printf("Rolling back migration %q\n", x.Version)
 		// Stop after one rollback
-		return m.migrateDown(x)
+		return m.runWithHooks(x, m.migrateDown)
 	}
+	return nil
+}
+
+func (m *List) runWithHooks(migration *Migration, fn func(*Migration) error) error {
+	if fn == nil {
+		return fmt.Errorf("No function for migration")
+	}
+
+	if m.Hooks.Before != nil {
+		if err := m.Hooks.Before(m.Context); err != nil {
+			return err
+		}
+	}
+
+	if err := fn(migration); err != nil {
+		if m.Hooks.OnError != nil {
+			if err2 := m.Hooks.OnError(m.Context, err); err2 != nil {
+				return err2
+			}
+		}
+		return err
+	}
+
+	if m.Hooks.After != nil {
+		if err := m.Hooks.After(m.Context); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -108,8 +149,10 @@ func (m *List) migrateDown(migration *Migration) error {
 	if migration.Down == nil {
 		return fmt.Errorf("No Down() function for migration %q", migration.Version)
 	}
+
 	if err := migration.Down(m.Context); err != nil {
 		return err
 	}
+
 	return m.RemoveVersion(migration.Version)
 }
