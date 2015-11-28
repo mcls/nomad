@@ -1,12 +1,4 @@
-package nomad
-
-// VersionStore checks whether versions are up to date
-type VersionStore interface {
-	AddVersion(v string) error
-	RemoveVersion(v string) error
-	HasVersion(v string) bool
-	SetupVersionStore() error
-}
+package inmem
 
 // MemVersionStore is a in-memory implementation of VersionStore,
 // only used for tests

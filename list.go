@@ -14,6 +14,14 @@ type List struct {
 	migrations []*Migration
 }
 
+// VersionStore checks whether versions are up to date
+type VersionStore interface {
+	AddVersion(v string) error
+	RemoveVersion(v string) error
+	HasVersion(v string) bool
+	SetupVersionStore() error
+}
+
 type Hooks struct {
 	Before  func(interface{}) error        // Before is called before running or rolling back a migration
 	After   func(interface{}) error        // After is called after running or rolling back a migration

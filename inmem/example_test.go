@@ -1,9 +1,10 @@
-package nomad_test
+package inmem_test
 
 import (
 	"fmt"
 
 	"github.com/mcls/nomad"
+	"github.com/mcls/nomad/inmem"
 )
 
 // Context will be available to each migration and should be used to provide
@@ -22,7 +23,7 @@ func Example() {
 
 	migrations := nomad.NewList(
 		// For an example of a DB-backed VersionStore look at pg.VersionStore.
-		nomad.NewMemVersionStore(),
+		inmem.NewMemVersionStore(),
 		// context will be available to each migration
 		&context,
 		nil,

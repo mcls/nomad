@@ -56,7 +56,7 @@ migrations.Run()
 
 For more examples, take a look at:
 
-* In-memory example: [example_test.go](https://github.com/mcls/nomad/blob/master/example_test.go).
+* In-memory example: [example_test.go](https://github.com/mcls/nomad/blob/master/inmem/example_test.go).
 * PostgreSQL example: [example_test.go](https://github.com/mcls/nomad/blob/master/pg/example_test.go).
 
 ## Install
