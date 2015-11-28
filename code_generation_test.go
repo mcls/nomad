@@ -13,9 +13,9 @@ import (
 
 const migrationDir = "dummy_migrations"
 
-func TestMigratorNewVersion(t *testing.T) {
-	m := NewMigrator(migrationDir)
-	v := m.NewVersion()
+func TestCodeGenerator_NewVersion(t *testing.T) {
+	cg := NewCodeGenerator(migrationDir)
+	v := cg.NewVersion()
 	re := regexp.MustCompile("^\\d{4}-\\d{2}-\\d{2}_\\d{2}:\\d{2}:\\d{2}")
 	if !re.MatchString(v) {
 		t.Fatal(fmt.Sprintf("Version '%s' didn't match regexp %s", v, re.String()))
@@ -23,9 +23,9 @@ func TestMigratorNewVersion(t *testing.T) {
 }
 
 func TestMigrationFileHasValidSyntax(t *testing.T) {
-	m := NewMigrator(migrationDir)
+	cg := NewCodeGenerator(migrationDir)
 	w := new(bytes.Buffer)
-	m.WriteMigration(w, "abc")
+	cg.WriteMigration(w, "abc")
 	// Use go/format.Source to detect syntax errors
 	_, err := format.Source(w.Bytes())
 	if err != nil {
@@ -40,9 +40,9 @@ func TestGeneratedMigrationsCanBeBuilt(t *testing.T) {
 		fmt.Println("Couldn't clean migrations dir")
 		fmt.Println(err)
 	}
-	m := NewMigrator(migrationDir)
-	m.NomadPackage = "github.com/mcls/nomad"
-	m.Create("blah_blah")
+	cg := NewCodeGenerator(migrationDir)
+	cg.NomadPackage = "github.com/mcls/nomad"
+	cg.Create("blah_blah")
 
 	cmd := exec.Command("go", "build")
 	full, err := filepath.Abs(migrationDir)

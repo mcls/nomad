@@ -19,8 +19,8 @@ func NewMigrationCmd(list *List, migrationDirectory string) *cobra.Command {
 		Use:   "new",
 		Short: "create migration",
 		Run: func(cmd *cobra.Command, args []string) {
-			m := NewMigrator(migrationDirectory)
-			if err := m.Create(args[0]); err != nil {
+			cg := NewCodeGenerator(migrationDirectory)
+			if err := cg.Create(args[0]); err != nil {
 				log.Fatal(err)
 			}
 		},

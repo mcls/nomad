@@ -63,15 +63,15 @@ func init() {
 }
 `
 
-// Migrator generates migration files
-type Migrator struct {
+// CodeGenerator generates migration files
+type CodeGenerator struct {
 	Dir          string        // Where migrations will be stored
 	NewVersion   func() string // Generates the Migration's version
 	NomadPackage string
 }
 
-func NewMigrator(dir string) *Migrator {
-	return &Migrator{
+func NewCodeGenerator(dir string) *CodeGenerator {
+	return &CodeGenerator{
 		Dir:          dir,
 		NewVersion:   generateTimestamp,
 		NomadPackage: "github.com/mcls/nomad",
@@ -79,53 +79,53 @@ func NewMigrator(dir string) *Migrator {
 }
 
 // Create creates a new migration
-func (m *Migrator) Create(name string) error {
-	err := os.MkdirAll(m.Dir, 0755)
+func (cg *CodeGenerator) Create(name string) error {
+	err := os.MkdirAll(cg.Dir, 0755)
 	if err != nil {
 		return err
 	}
 
-	err = m.createSetupFile()
+	err = cg.createSetupFile()
 	if err != nil {
 		return err
 	}
 
-	version := m.NewVersion()
-	f, err := m.createFile(name, version)
+	version := cg.NewVersion()
+	f, err := cg.createFile(name, version)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	return m.WriteMigration(f, version)
+	return cg.WriteMigration(f, version)
 }
 
-func (m *Migrator) createSetupFile() error {
+func (cg *CodeGenerator) createSetupFile() error {
 	// Use 000_ prefix so it's init function gets called first and can do setup
 	// on which the other migrations can rely
-	full := path.Join(m.Dir, "000_setup_migrations.go")
+	full := path.Join(cg.Dir, "000_setup_migrations.go")
 	f, err := os.Create(full)
 	if err != nil {
 		return err
 	}
 	t := template.Must(template.New("default").Parse(tplSetup))
 	err = t.Execute(f, map[string]string{
-		"NomadPackage": m.NomadPackage,
+		"NomadPackage": cg.NomadPackage,
 	})
 	return err
 }
 
-func (m *Migrator) createFile(name, version string) (*os.File, error) {
+func (cg *CodeGenerator) createFile(name, version string) (*os.File, error) {
 	name = fmt.Sprintf("%s_%s.go", version, name)
-	full := path.Join(m.Dir, name)
+	full := path.Join(cg.Dir, name)
 	fmt.Printf("Creating migration: '%s'\n", full)
 	return os.Create(full)
 }
 
 // WriteMigration writes boilerplate migration go code to the writer
-func (m *Migrator) WriteMigration(w io.Writer, version string) error {
+func (cg *CodeGenerator) WriteMigration(w io.Writer, version string) error {
 	t := template.Must(template.New("migration").Parse(tplMigration))
 	err := t.Execute(w, map[string]string{
-		"NomadPackage": m.NomadPackage,
+		"NomadPackage": cg.NomadPackage,
 		"Version":      version,
 	})
 	return err
