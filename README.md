@@ -14,11 +14,25 @@ You can use it with an ORM, or use plain SQL.
 Here's an example of a migration definition.
 
 ```go
-&nomad.Migration{
+import (
+    "database/sql"
+    "log"
+
+    "github.com/mcls/nomad"
+    nomadpg "github.com/mcls/nomad/pg"
+)
+db, err := sql.Open("postgres", "dbname=nomad_db_test sslmode=disable")
+if err != nil {
+    log.Fatal(err)
+}
+
+migrations := nomadpg.NewList(db)
+
+migrations.Add(&nomad.Migration{
     Version: "2015-11-22_18:07:05",
     Up: func(ctx interface{}) error {
-        c := ctx.(*Context)
-        _, err := c.DB.Exec(`
+        c := ctx.(*nomadpg.Context)
+        _, err := c.Tx.Exec(`
         CREATE TABLE posts (
             id serial PRIMARY KEY,
             title text NOT NULL CHECK(length(title) < 200),
@@ -28,16 +42,20 @@ Here's an example of a migration definition.
         return err
     },
     Down: func(ctx interface{}) error {
-        c := ctx.(*Context)
-        _, err := c.DB.Exec("DROP TABLE posts")
+        c := ctx.(*nomadpg.Context)
+        _, err := c.Tx.Exec("DROP TABLE posts")
         return err
     },
-}
+})
+
+// Run pending migrations
+migrations.Run()
 ```
 
-For a more complete example, take a look at
-[example_test.go](https://github.com/mcls/nomad/blob/master/example_test.go).
+For more examples, take a look at:
 
+* In-memory example: [example_test.go](https://github.com/mcls/nomad/blob/master/example_test.go).
+* PostgreSQL example: [example_test.go](https://github.com/mcls/nomad/blob/master/pg/example_test.go).
 
 ## Install
 
