@@ -68,7 +68,7 @@ func (m *List) Sort() {
 type Runner struct {
 	VersionStore
 	Context interface{}
-	List    *List
+	list    *List
 	hooks   *Hooks
 }
 
@@ -76,7 +76,7 @@ func NewRunner(versionStore VersionStore, list *List, context interface{}, hooks
 	runner := &Runner{
 		VersionStore: versionStore,
 		Context:      context,
-		List:         list,
+		list:         list,
 		hooks:        &Hooks{},
 	}
 	if len(hooks) > 0 {
@@ -89,7 +89,7 @@ func (r *Runner) Run() error {
 	if err := r.setup(); err != nil {
 		return err
 	}
-	for _, x := range r.List.migrations {
+	for _, x := range r.list.migrations {
 		if r.HasVersion(x.Version) {
 			continue
 		}
@@ -117,8 +117,8 @@ func (r *Runner) Rollback() error {
 	if err := r.setup(); err != nil {
 		return err
 	}
-	sort.Sort(sort.Reverse(r.List))
-	for _, x := range r.List.migrations {
+	sort.Sort(sort.Reverse(r.list))
+	for _, x := range r.list.migrations {
 		if !r.HasVersion(x.Version) {
 			continue
 		}
