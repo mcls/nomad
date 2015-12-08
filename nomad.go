@@ -12,22 +12,6 @@ type Migration struct {
 	Down    func(ctx interface{}) error // Ran when rolling back
 }
 
-// List is a list of migrations
-type List struct {
-	migrations []*Migration
-}
-
-func NewList() *List {
-	return &List{[]*Migration{}}
-}
-
-type Runner struct {
-	VersionStore
-	hooks   *Hooks
-	Context interface{}
-	List    *List
-}
-
 // VersionStore checks whether versions are up to date
 type VersionStore interface {
 	AddVersion(v string) error
@@ -42,17 +26,13 @@ type Hooks struct {
 	OnError func(interface{}, error) error // OnError is called if anything goes wrong during a migration
 }
 
-func NewRunner(versionStore VersionStore, hooks *Hooks, list *List, context interface{}) *Runner {
-	if hooks == nil {
-		hooks = &Hooks{}
-	}
-	runner := &Runner{
-		VersionStore: versionStore,
-		hooks:        hooks,
-		Context:      context,
-		List:         list,
-	}
-	return runner
+// List is a list of migrations
+type List struct {
+	migrations []*Migration
+}
+
+func NewList() *List {
+	return &List{[]*Migration{}}
 }
 
 func (m *List) Add(migration *Migration) {
@@ -82,6 +62,27 @@ func (m *List) Swap(i, j int) {
 
 func (m *List) Sort() {
 	sort.Sort(m)
+}
+
+// Runner runs pending migrations, or rolls back existing ones
+type Runner struct {
+	VersionStore
+	Context interface{}
+	List    *List
+	hooks   *Hooks
+}
+
+func NewRunner(versionStore VersionStore, list *List, context interface{}, hooks ...*Hooks) *Runner {
+	runner := &Runner{
+		VersionStore: versionStore,
+		Context:      context,
+		List:         list,
+		hooks:        &Hooks{},
+	}
+	if len(hooks) > 0 {
+		runner.hooks = hooks[0]
+	}
+	return runner
 }
 
 func (r *Runner) Run() error {

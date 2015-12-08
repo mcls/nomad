@@ -12,9 +12,9 @@ import (
 func NewRunner(db *sql.DB, list *nomad.List) *nomad.Runner {
 	return nomad.NewRunner(
 		NewVersionStore(db),
-		NewHooks(),
 		list,
 		NewContext(db),
+		NewHooks(),
 	)
 }
 

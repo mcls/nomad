@@ -3,12 +3,7 @@ package inmem
 import "github.com/mcls/nomad"
 
 func NewRunner(list *nomad.List, ctx ...interface{}) *nomad.Runner {
-	runner := nomad.NewRunner(
-		NewMemVersionStore(),
-		&nomad.Hooks{},
-		list,
-		nil,
-	)
+	runner := nomad.NewRunner(NewMemVersionStore(), list, nil)
 	if len(ctx) > 0 {
 		runner.Context = ctx[0]
 	}
