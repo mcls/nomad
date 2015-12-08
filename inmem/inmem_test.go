@@ -64,7 +64,7 @@ func TestRun(t *testing.T) {
 	}
 }
 
-func TestRunWithErrors(t *testing.T) {
+func TestRun_WithErrors(t *testing.T) {
 	x := 0
 	l := nomad.NewList()
 	l.Add(&nomad.Migration{
@@ -92,7 +92,7 @@ func TestRunWithErrors(t *testing.T) {
 	}
 }
 
-func TestDoesntRunMigrationTwice(t *testing.T) {
+func TestRun_DoesntMigrateSameTwice(t *testing.T) {
 	x := 0
 	l := nomad.NewList()
 	runner := NewRunner(l)
@@ -123,6 +123,45 @@ func TestDoesntRunMigrationTwice(t *testing.T) {
 	for _, v := range []string{"A", "B"} {
 		if !runner.HasVersion(v) {
 			t.Fatalf("Should have version '%s'", v)
+		}
+	}
+}
+
+func TestRun_UsesCorrectOrder(t *testing.T) {
+	type Data struct {
+		Versions []string
+	}
+	l := nomad.NewList()
+	l.Add(&nomad.Migration{
+		Version: "B",
+		Up: func(ctx interface{}) error {
+			c := ctx.(*Data)
+			c.Versions = append(c.Versions, "B")
+			return nil
+		},
+	})
+	l.Add(&nomad.Migration{
+		Version: "A",
+		Up: func(ctx interface{}) error {
+			c := ctx.(*Data)
+			c.Versions = append(c.Versions, "A")
+			return nil
+		},
+	})
+
+	data := &Data{[]string{}}
+	runner := NewRunner(l, data)
+	if err := runner.Run(); err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []string{"A", "B"}
+	for i, want := range expected {
+		if data.Versions[i] != want {
+			t.Logf("Migrations didn't run in correct order")
+			t.Logf("Got : %q", data.Versions)
+			t.Logf("Want: %q", expected)
+			t.FailNow()
 		}
 	}
 }
@@ -168,7 +207,7 @@ func TestRollback(t *testing.T) {
 	}
 }
 
-func TestRollbackWithErrors(t *testing.T) {
+func TestRollback_WithErrors(t *testing.T) {
 	l := nomad.NewList()
 	runner := NewRunner(l)
 	runner.AddVersion("A")

@@ -106,6 +106,7 @@ func (r *Runner) Run() error {
 // version
 func (r *Runner) setup() error {
 	if err := r.SetupVersionStore(); err == nil {
+		r.list.Sort()
 		return nil
 	} else {
 		return err
