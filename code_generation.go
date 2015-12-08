@@ -17,7 +17,7 @@ import (
 	"os"
 
 	"{{.NomadPackage}}"
-	"{{.NomadPackage}}/pg"
+	nomadpg "{{.NomadPackage}}/pg"
 	// Setup postgres driver
 	_ "github.com/lib/pq"
 )
@@ -25,11 +25,15 @@ import (
 var Migrations *nomad.List
 
 func init() {
+	Migrations = nomad.NewList()
+}
+
+func Runner() *nomad.Runner {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	Migrations = pg.NewList(db)
+	return nomadpg.NewRunner(db, Migrations)
 }
 `
 

@@ -8,7 +8,7 @@ import (
 )
 
 func TestSort(t *testing.T) {
-	l := nomad.NewList(NewMemVersionStore(), nil, nil)
+	l := nomad.NewList()
 	l.Add(&nomad.Migration{Version: "B"})
 	l.Add(&nomad.Migration{Version: "A"})
 	l.Add(&nomad.Migration{Version: "C"})
@@ -25,9 +25,10 @@ func TestSort(t *testing.T) {
 func TestRun(t *testing.T) {
 	x := 0
 
-	l := nomad.NewList(NewMemVersionStore(), nil, nil)
+	l := nomad.NewList()
+	runner := NewRunner(l)
 	for _, v := range []string{"A", "B"} {
-		if l.HasVersion(v) {
+		if runner.HasVersion(v) {
 			t.Fatalf("Can't have version '%s'", v)
 		}
 	}
@@ -47,7 +48,7 @@ func TestRun(t *testing.T) {
 		},
 	})
 
-	if err := l.Run(); err != nil {
+	if err := runner.Run(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -57,7 +58,7 @@ func TestRun(t *testing.T) {
 
 	// Check that all versions have been added
 	for _, v := range []string{"A", "B"} {
-		if !l.HasVersion(v) {
+		if !runner.HasVersion(v) {
 			t.Fatalf("Should have version '%s'", v)
 		}
 	}
@@ -65,7 +66,7 @@ func TestRun(t *testing.T) {
 
 func TestRunWithErrors(t *testing.T) {
 	x := 0
-	l := nomad.NewList(NewMemVersionStore(), nil, nil)
+	l := nomad.NewList()
 	l.Add(&nomad.Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -79,7 +80,8 @@ func TestRunWithErrors(t *testing.T) {
 			return nil
 		},
 	})
-	err := l.Run()
+	runner := NewRunner(l)
+	err := runner.Run()
 
 	if err == nil || err.Error() != "Oh no" {
 		t.Fatalf("Wrong error returned: '%s'", err)
@@ -92,9 +94,10 @@ func TestRunWithErrors(t *testing.T) {
 
 func TestDoesntRunMigrationTwice(t *testing.T) {
 	x := 0
+	l := nomad.NewList()
+	runner := NewRunner(l)
 
-	l := nomad.NewList(NewMemVersionStore(), nil, nil)
-	l.AddVersion("A")
+	runner.AddVersion("A")
 	l.Add(&nomad.Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -110,7 +113,7 @@ func TestDoesntRunMigrationTwice(t *testing.T) {
 		},
 	})
 
-	l.Run()
+	runner.Run()
 
 	if x != 1 {
 		t.Fatal("Didn't run migrations properly")
@@ -118,7 +121,7 @@ func TestDoesntRunMigrationTwice(t *testing.T) {
 
 	// Check that all versions have been added
 	for _, v := range []string{"A", "B"} {
-		if !l.HasVersion(v) {
+		if !runner.HasVersion(v) {
 			t.Fatalf("Should have version '%s'", v)
 		}
 	}
@@ -127,9 +130,10 @@ func TestDoesntRunMigrationTwice(t *testing.T) {
 func TestRollback(t *testing.T) {
 	x := 0
 
-	l := nomad.NewList(NewMemVersionStore(), nil, nil)
-	l.AddVersion("A")
-	l.AddVersion("B")
+	l := nomad.NewList()
+	runner := NewRunner(l)
+	runner.AddVersion("A")
+	runner.AddVersion("B")
 
 	l.Add(&nomad.Migration{
 		Version: "A",
@@ -146,7 +150,7 @@ func TestRollback(t *testing.T) {
 		},
 	})
 
-	if err := l.Rollback(); err != nil {
+	if err := runner.Rollback(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -155,18 +159,19 @@ func TestRollback(t *testing.T) {
 	}
 
 	// Check that only the last migration was rolled back
-	if !l.HasVersion("A") {
+	if !runner.HasVersion("A") {
 		t.Fatal("Should not have rolled back 'A'")
 	}
 
-	if l.HasVersion("B") {
+	if runner.HasVersion("B") {
 		t.Fatal("Still has version 'B'")
 	}
 }
 
 func TestRollbackWithErrors(t *testing.T) {
-	l := nomad.NewList(NewMemVersionStore(), nil, nil)
-	l.AddVersion("A")
+	l := nomad.NewList()
+	runner := NewRunner(l)
+	runner.AddVersion("A")
 
 	l.Add(&nomad.Migration{
 		Version: "A",
@@ -175,13 +180,13 @@ func TestRollbackWithErrors(t *testing.T) {
 		},
 	})
 
-	if err := l.Rollback(); err == nil {
+	if err := runner.Rollback(); err == nil {
 		t.Fatal("Expected error")
 	} else if err.Error() != "No way back!" {
 		t.Fatalf("Expected different error than %q", err)
 	}
 
-	if !l.HasVersion("A") {
+	if !runner.HasVersion("A") {
 		t.Fatal("Shouldn't have removed 'A' after error")
 	}
 }

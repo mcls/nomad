@@ -62,7 +62,7 @@ func TestPostgresVersionStoreWorks(t *testing.T) {
 func TestRunningMigrations(t *testing.T) {
 	db := setupDatabase(t)
 
-	l := NewList(db)
+	l := nomad.NewList()
 	l.Add(&nomad.Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -76,11 +76,13 @@ func TestRunningMigrations(t *testing.T) {
 			return err
 		},
 	})
-	if err := l.Run(); err != nil {
+
+	runner := NewRunner(db, l)
+	if err := runner.Run(); err != nil {
 		t.Fatal(err)
 	}
 
-	if !l.HasVersion("A") {
+	if !runner.HasVersion("A") {
 		t.Fatal("Should have version A")
 	}
 
@@ -97,7 +99,7 @@ func TestRunningMigrations(t *testing.T) {
 
 func TestRollingBackMigration(t *testing.T) {
 	db := setupDatabase(t)
-	l := NewList(db)
+	l := nomad.NewList()
 	l.Add(&nomad.Migration{
 		Version: "A",
 		Up: func(ctx interface{}) error {
@@ -135,24 +137,26 @@ func TestRollingBackMigration(t *testing.T) {
 			return nil
 		},
 	})
-	if err := l.Run(); err != nil {
+
+	runner := NewRunner(db, l)
+	if err := runner.Run(); err != nil {
 		log.Fatal(err)
 	}
 
-	if !l.HasVersion("B") {
+	if !runner.HasVersion("B") {
 		t.Fatal("Should have version B")
 	}
 
 	// Rollback the last migration
-	if err := l.Rollback(); err != nil {
+	if err := runner.Rollback(); err != nil {
 		log.Fatal(err)
 	}
 
-	if !l.HasVersion("A") {
+	if !runner.HasVersion("A") {
 		t.Fatal("Should have version A")
 	}
 
-	if l.HasVersion("B") {
+	if runner.HasVersion("B") {
 		t.Fatal("Should NOT have version B")
 	}
 }

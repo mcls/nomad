@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewMigrationCmd(list *List, migrationDirectory string) *cobra.Command {
+func NewMigrationCmd(runner *Runner, migrationDirectory string) *cobra.Command {
 	cmdRoot := &cobra.Command{
 		Use:   "migration",
 		Short: "migration subcommands",
@@ -30,7 +30,7 @@ func NewMigrationCmd(list *List, migrationDirectory string) *cobra.Command {
 		Use:   "run",
 		Short: "run all pending migrations",
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := list.Run(); err != nil {
+			if err := runner.Run(); err != nil {
 				log.Fatal(err)
 			}
 		},
@@ -40,7 +40,7 @@ func NewMigrationCmd(list *List, migrationDirectory string) *cobra.Command {
 		Use:   "rollback",
 		Short: "rollback the most recent migration",
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := list.Rollback(); err != nil {
+			if err := runner.Rollback(); err != nil {
 				log.Fatal(err)
 			}
 		},

@@ -8,12 +8,13 @@ import (
 	"github.com/mcls/nomad"
 )
 
-// NewList creates a nomad.List for postgres migrations
-func NewList(db *sql.DB) *nomad.List {
-	return nomad.NewList(
+// NewRunner creates a nomad.Runner for postgres migrations
+func NewRunner(db *sql.DB, list *nomad.List) *nomad.Runner {
+	return nomad.NewRunner(
 		NewVersionStore(db),
-		NewContext(db),
 		NewHooks(),
+		list,
+		NewContext(db),
 	)
 }
 

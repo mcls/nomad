@@ -12,12 +12,8 @@ import (
 // the migrations gives you access to the current database transaction, which
 // will be rolled back if anything goes wrong
 func Example() {
-	db, err := sql.Open("postgres", "dbname=nomad_db_test sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	migrations := nomadpg.NewList(db)
+	migrations := nomad.NewList()
 
 	m1 := &nomad.Migration{
 		Version: "2015-11-26_19:00:00",
@@ -57,9 +53,16 @@ func Example() {
 	migrations.Add(m1)
 	migrations.Add(m2)
 
+	db, err := sql.Open("postgres", "dbname=nomad_db_test sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	runner := nomadpg.NewRunner(db, migrations)
+
 	// Run all pending migrations
-	migrations.Run()
+	runner.Run()
 
 	// Rollback the latest migration
-	migrations.Rollback()
+	runner.Rollback()
 }

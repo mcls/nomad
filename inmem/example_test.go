@@ -19,16 +19,7 @@ type Context struct {
 // The context object can be of any type and provides the migration functions
 // with access to the database or other resources.
 func Example() {
-	context := Context{[]string{}}
-
-	migrations := nomad.NewList(
-		// For an example of a DB-backed VersionStore look at pg.VersionStore.
-		inmem.NewMemVersionStore(),
-		// context will be available to each migration
-		&context,
-		nil,
-	)
-
+	migrations := nomad.NewList()
 	m1 := &nomad.Migration{
 		Version: "2015-11-26_19:00:00",
 		Up: func(ctx interface{}) error {
@@ -61,9 +52,12 @@ func Example() {
 	}
 	migrations.Add(m1)
 	migrations.Add(m2)
-	migrations.Run()
+
+	context := &Context{[]string{}}
+	runner := inmem.NewRunner(migrations, context)
+	runner.Run()
 	fmt.Printf("context.Data: %q\n", context.Data)
-	migrations.Rollback()
+	runner.Rollback()
 	fmt.Printf("context.Data: %q\n", context.Data)
 	// Output:
 	// Migrated Up: m1

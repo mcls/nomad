@@ -1,5 +1,20 @@
 package inmem
 
+import "github.com/mcls/nomad"
+
+func NewRunner(list *nomad.List, ctx ...interface{}) *nomad.Runner {
+	runner := nomad.NewRunner(
+		NewMemVersionStore(),
+		&nomad.Hooks{},
+		list,
+		nil,
+	)
+	if len(ctx) > 0 {
+		runner.Context = ctx[0]
+	}
+	return runner
+}
+
 // MemVersionStore is a in-memory implementation of VersionStore,
 // only used for tests
 type MemVersionStore struct {

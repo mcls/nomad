@@ -22,36 +22,58 @@ import (
     nomadpg "github.com/mcls/nomad/pg"
 )
 
+migrations := nomad.NewList()
+
+m1 := &nomad.Migration{
+  Version: "2015-11-26_19:00:00",
+  Up: func(ctx interface{}) error {
+    c := ctx.(*nomadpg.Context)
+    _, err := c.Tx.Exec(`
+      CREATE TABLE users (
+        id serial PRIMARY KEY,
+        username text
+      );`)
+    return err
+  },
+  Down: func(ctx interface{}) error {
+    c := ctx.(*nomadpg.Context)
+    _, err := c.Tx.Exec(`DROP TABLE users`)
+    return err
+  },
+}
+m2 := &nomad.Migration{
+  Version: "2015-11-26_19:30:00",
+  Up: func(ctx interface{}) error {
+    c := ctx.(*nomadpg.Context)
+    _, err := c.Tx.Exec(`
+      CREATE TABLE posts (
+        id serial PRIMARY KEY,
+        title text
+        content text
+      );`)
+    return err
+  },
+  Down: func(ctx interface{}) error {
+    c := ctx.(*nomadpg.Context)
+    _, err := c.Tx.Exec(`DROP TABLE posts`)
+    return err
+  },
+}
+migrations.Add(m1)
+migrations.Add(m2)
+
 db, err := sql.Open("postgres", "dbname=nomad_db_test sslmode=disable")
 if err != nil {
-    log.Fatal(err)
+  log.Fatal(err)
 }
 
-migrations := nomadpg.NewList(db)
+runner := nomadpg.NewRunner(db, migrations)
 
-// Create a migration
-migrations.Add(&nomad.Migration{
-    Version: "2015-11-22_18:07:05",
-    Up: func(ctx interface{}) error {
-        c := ctx.(*nomadpg.Context)
-        _, err := c.Tx.Exec(`
-        CREATE TABLE posts (
-            id serial PRIMARY KEY,
-            title text NOT NULL CHECK(length(title) < 200),
-            content text NOT NULL,
-            created_at timestamp with time zone DEFAULT(current_timestamp)
-        )`)
-        return err
-    },
-    Down: func(ctx interface{}) error {
-        c := ctx.(*nomadpg.Context)
-        _, err := c.Tx.Exec("DROP TABLE posts")
-        return err
-    },
-})
+// Run all pending migrations
+runner.Run()
 
-// Run pending migrations
-migrations.Run()
+// Rollback the latest migration
+runner.Rollback()
 ```
 
 For more examples, take a look at:
