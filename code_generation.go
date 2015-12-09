@@ -107,6 +107,12 @@ func (cg *CodeGenerator) createSetupFile() error {
 	// Use 000_ prefix so it's init function gets called first and can do setup
 	// on which the other migrations can rely
 	full := path.Join(cg.Dir, "000_setup_migrations.go")
+
+	// Cancel if file already exists
+	if _, err := os.Stat(full); err == nil {
+		return nil
+	}
+
 	f, err := os.Create(full)
 	if err != nil {
 		return err
